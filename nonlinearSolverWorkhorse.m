@@ -1,8 +1,9 @@
+%% Check that the grids for t, u exist. If not, initialise them.
 if (~exist('ts', 'var') || ~exist('ug', 'var'))
     nonlinearSolverInitialisation;
 end
 
-%% Pressure (probably lithostatic, could also be constant for a shear cell)
+%% Pressure (lithostatic for a free surface flow)
 function p = pr(z, g, theta)
   p = g * cos(theta) * ( 1 - z );
 end
@@ -35,7 +36,7 @@ function [Ihs, Ips, Ims] = inertials(us, zs, g, theta)
       end
 end
 
-%% Main loop
+%%%% Main loop for time-stepping
 NRFailedSteps = zeros(nt, 1);      % Number of steps at which NR fails to converge
 for tind = 1:(nt-1)
   % Evaluate time, g and theta at the half-time between 

@@ -28,7 +28,9 @@ function fig = plotSol(sol, bagSol, fign)
     dz = sol.zs(2) - sol.zs(1);
     chis = 1/dz * sum( sol.ug.^2 , 1) ./ ( sum(sol.ug, 1).^2 );
     plot(sol.ts, chis, 'k-');
-    ylim([1, 1.6]);
+    title('\chi(t)');
+    ylim([1, 1.4]);
+    grid;
   end
 
 %% Contours of u(z,t)
@@ -113,11 +115,12 @@ function fig = plotSol(sol, bagSol, fign)
         for ( tind = 1:length(sol.ts) )
             Lyas(tind) = (1/2)*integrate((sol.ug(:, tind) - bagSol.ug(:, tind)).^2, dz);
         end
-        plot(ts, Lyas);
+        semilogy(ts, Lyas);
+        grid;
         title('Lyapunov');
         xlabel('t'); ylabel('L'); 
         % ylim([0, max(Lyas(ts > max(ts)/3))*sqrt(2)]);
-        ylim([0, inf]);
+        ylim([1e-6, 1e-2]);
     end 
 
   end
