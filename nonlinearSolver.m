@@ -13,5 +13,5 @@ nonlinearSolverDerivatives;
 toc;
 
 %% Plot the solution and compare it to the Bagnoldian solution
-plotSol(sol, bagSol);
+plotSol(sol);
 toc;

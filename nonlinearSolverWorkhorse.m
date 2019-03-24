@@ -36,6 +36,10 @@ function [Ihs, Ips, Ims] = inertials(us, zs, g, theta)
       end
 end
 
+%% Profiling
+whtic = tic;
+whcpu = cputime;
+
 %%%% Main loop for time-stepping
 NRFailedSteps = zeros(nt, 1);      % Number of steps at which NR fails to converge
 for tind = 1:(nt-1)
@@ -140,4 +144,14 @@ end
 printf('NR failed to converge on %d out of %d timesteps\n', 
   sum(NRFailedSteps), nt-1);
 
-sol = struct('ts', ts, 'zs', zs, 'tg', tg, 'zg', zg, 'ug', ug);
+%% Profiling
+whwall = toc(whtic);
+whcpu = cputime - whcpu;
+
+qs = integrateg(ug, dz);
+chis = integrateg(ug.^2, dz) ./ qs.^2;
+
+sol = struct('ts', ts, 'dt', dt, 'zs', zs, 'dz', dz, 'tg', tg, 'zg', zg, ...
+    'gs', arrayfun(g, ts), 'thetas', arrayfun(theta, ts), ...
+    'ug', ug, 'qs', qs, 'chis', chis, ...
+    'whwall', whwall, 'whcpu', whcpu);
