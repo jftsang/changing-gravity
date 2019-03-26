@@ -30,13 +30,13 @@ dmudI = @(I) 0.4336 * 0.5029 * abs(I)^(0.4336 - 1);
 % dmudI = @(I) tan(10*deg)*sech(I/0.08)^2 / 0.08 ...
 %                + ( tan(20*deg) - tan(10*deg) )*sech(I/1)^2 / 1;
 
-%% power law
-% alpha = 1/3;
-% mu = @(I) tan(15*deg) * I^alpha;
-% dmudI = @(I) tan(15*deg) * I^(alpha-1) * alpha;
+%% power law --- TODO need a piecewise definition for I<0
+alpha = 1/3;
+mu = @(I) tan(15*deg) * (I/2.5)^alpha;
+dmudI = @(I) tan(15*deg) * (I/2.5)^(alpha-1) * alpha / 2.5;
 
-mu = @(I) tan(15*deg) + log(I);
-dmudI = @(I) 1/I;
+% mu = @(I) tan(15*deg) + log(I);
+% dmudI = @(I) 1/I;
 
 %%%% Specify how g and theta depend on time
 
@@ -57,7 +57,7 @@ theta = @(t) 15*deg;
 
 %%%% Specify initial conditions
 %% Nominally a plug flow, but need a tiny bit of shear to handle singularity
-u0 = @(z) 12 + 0.05*sin(0.5*pi*z);
+u0 = @(z) 1 + 0.05*sin(0.5*pi*z);
 
 %% Nondimensionalised grain size (equivalent to rescaling time)
 
@@ -65,9 +65,9 @@ u0 = @(z) 12 + 0.05*sin(0.5*pi*z);
 delta = 1;
 
 %%%% Grid size and timestepping
-nz = 64;
+nz = 96;
 tmax = 60;
-dt = 0.1;
+dt = 0.05;
 
 %%%% Options for Newton--Raphson iteration
 %% Use Newton--Raphson iteration to solve implicit evolution 
@@ -75,5 +75,3 @@ dt = 0.1;
 maxNRIter = 10;
 NRPrecisionGoal = 1e-8;
 NRRelaxation = 1.0;
-
-nonlinearSolverInitialisation;

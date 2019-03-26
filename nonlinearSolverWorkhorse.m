@@ -1,6 +1,8 @@
-%% Check that the grids for t, u exist. If not, initialise them.
-if (~exist('ts', 'var') || ~exist('ug', 'var'))
-    nonlinearSolverInitialisation;
+%% Always initialise afresh (rather than using exist)
+nonlinearSolverInitialisation;
+
+if (~exist('quiet', 'var'))
+  quiet = false;
 end
 
 %% Pressure (lithostatic for a free surface flow)
@@ -128,21 +130,29 @@ for tind = 1:(nt-1)
     % Check if we have exceeded the maximum number of NR iterations  
     if (nNRIters >= maxNRIter)
         NRFailedSteps(tind) = 1;  
-        warning(sprintf( ...
-          'At t = %f: NR failed to achieve NRPrecisionGoal %e after %d steps.\nNRChange = %e, cond(Jac) = %e', ...
-          thalf, NRPrecisionGoal, nNRIters, NRChange, cond(Jac)));
+        if (~quiet)
+          warning(sprintf( ...
+            'At t = %f: NR failed to achieve NRPrecisionGoal %e after %d steps.\nNRChange = %e, cond(Jac) = %e', ...
+            thalf, NRPrecisionGoal, nNRIters, NRChange, cond(Jac)));
+          fflush(stderr);
+        end
         ug(:, tind+1) = utest;
         clear ucurr utest;
         break;
     end
     
   end
-  printf('Completed %d of %d timesteps. NRChange = %.3e in %d iterations, cond = %e\n', ...
-    tind, nt-1, NRChange, nNRIters, cond(Jac));
+  if (~quiet)
+    printf('Completed %d of %d timesteps. NRChange = %.3e in %d iterations, cond = %e\n', ...
+      tind, nt-1, NRChange, nNRIters, cond(Jac));
+    fflush(stdout);
+  end
 end
 
-printf('NR failed to converge on %d out of %d timesteps\n', 
-  sum(NRFailedSteps), nt-1);
+if (~quiet)
+  printf('NR failed to converge on %d out of %d timesteps\n', 
+    sum(NRFailedSteps), nt-1);
+end
 
 %% Profiling
 whwall = toc(whtic);
@@ -151,7 +161,7 @@ whcpu = cputime - whcpu;
 qs = integrateg(ug, dz);
 chis = integrateg(ug.^2, dz) ./ qs.^2;
 
-sol = struct('ts', ts, 'dt', tmax, 'tmax', dt, ...
+sol = struct('ts', ts, 'dt', dt, 'tmax', tmax, ...
     'zs', zs, 'dz', dz, 'tg', tg, 'zg', zg, ...
     'gs', arrayfun(g, ts), 'thetas', arrayfun(theta, ts), ...
     'ug', ug, 'qs', qs, 'chis', chis, ...

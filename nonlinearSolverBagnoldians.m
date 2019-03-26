@@ -10,7 +10,7 @@ function [bagSol, Ithts] = nonlinearSolverBagnoldians(mu, g, theta, ts, zs)
 
   %% Check if the value of tan(theta) falls within the range of mu. 
   %% (We assume that mu is increasing.)
-  Imin = -1000; muMin = mu(Imin);
+  Imin = 0; muMin = mu(Imin); % TODO try to avoid I=0!
   Imax = 1000; muMax = mu(Imax);
 
   %% Need to invert mu(I)
@@ -50,7 +50,14 @@ function [bagSol, Ithts] = nonlinearSolverBagnoldians(mu, g, theta, ts, zs)
       * ( 1 - (1-zs).^(3/2) );
   end
 
-  bagSol = struct('ts', ts, 'zs', zs, ...
+  dz = zs(2) - zs(1);
+  qs = integrateg(uBag, dz);
+  chis = integrateg(uBag.^2, dz) ./ qs.^2;
+
+  bagSol = struct('ts', ts, 'dt', ts(2)-ts(1), 'tmax', ts(end), ...
+            'zs', zs, 'dz', dz, ...
+            'gs', arrayfun(g, ts), 'thetas', arrayfun(theta, ts), ...
             'Ithts', Ithts, ...
-            'tg', tg, 'zg', zg, 'ug', uBag);
+            'tg', tg, 'zg', zg, 'ug', uBag, ...
+            'qs', qs, 'chis', chis);
 end
